@@ -1,0 +1,19 @@
+<!-- public/message.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Message</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h2>Send Email</h2>
+    <form action="/send-email" method="POST">
+        <input type="text" name="to" placeholder="Recipient Email" required>
+        <input type="text" name="subject" placeholder="Subject" required>
+        <textarea name="text" placeholder="Your Message" required></textarea>
+        <button type="submit">Send Email</button>
+    </form>
+</body>
+</html>

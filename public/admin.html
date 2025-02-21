@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Admin Panel</h1>
+
+  <!-- Search User by ID -->
+  <div>
+    <input type="text" id="searchId" placeholder="Enter User ID">
+    <button onclick="getUserById()">Search User by ID</button>
+  </div>
+
+  <!-- User Table -->
+  <table id="usersTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Creation Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Navigation -->
+  <a href="/main.html">Back to Main</a>
+  <a href="/logout">Logout</a>
+
+  <script>
+    // Fetch and Display All Users
+    async function fetchUsers() {
+      const res = await fetch('/api/users');
+      const users = await res.json();
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = '';
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.username}</td>
+          <td>${user.role}</td>
+          <td>${new Date(user.creationDate).toLocaleDateString()}</td>
+          <td>
+            <button onclick="deleteUser('${user._id}')">Delete</button>
+            <button onclick="toggleRole('${user._id}', '${user.role}')">
+              ${user.role === 'admin' ? 'Demote' : 'Promote'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Get User by ID
+    async function getUserById() {
+      const userId = document.getElementById('searchId').value;
+      if (!userId) {
+        alert('Please enter a User ID');
+        return;
+      }
+      const res = await fetch(`/api/users/${userId}`);
+      if (res.status === 404) {
+        alert('User not found');
+        return;
+      }
+      const user = await res.json();
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = '';
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${user.username}</td>
+        <td>${user.role}</td>
+        <td>${new Date(user.creationDate).toLocaleDateString()}</td>
+        <td>
+          <button onclick="deleteUser('${user._id}')">Delete</button>
+          <button onclick="toggleRole('${user._id}', '${user.role}')">
+            ${user.role === 'admin' ? 'Demote' : 'Promote'}
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    // Delete User
+    async function deleteUser(id) {
+      if (confirm('Are you sure you want to delete this user?')) {
+        await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        fetchUsers();
+      }
+    }
+
+    // Promote/Demote User
+    async function toggleRole(id, currentRole) {
+      const newRole = currentRole === 'admin' ? 'user' : 'admin';
+      await fetch(`/api/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole })
+      });
+      fetchUsers();
+    }
+
+    // Load Users on Page Load
+    fetchUsers();
+  </script>
+</body>
+</html>
